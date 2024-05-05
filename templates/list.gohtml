@@ -1,0 +1,21 @@
+<input class="form-control mb-3" 
+  type="search" 
+  name="search"
+  placeholder="Search commands" 
+  hx-post="/" 
+  hx-trigger="input changed delay:500ms, search" 
+  hx-target="#table-body" 
+  hx-swap="outerHTML"
+>
+
+<table class="table" hx-post="/" hx-trigger="load" hx-target="#table-body" hx-swap="outerHTML">
+  <thead>
+    <tr>
+      <th>Command</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody id="table-body">
+  </tbody>
+</table>
+

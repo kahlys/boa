@@ -1,0 +1,6 @@
+{{if .OutputError}}
+  <pre class="alert alert-danger mt-2"><code>{{.OutputError}}</code></pre>
+{{end}}
+{{if .Output}}
+  <pre class="alert alert-light mt-2"><code>{{.Output}}</code></pre>
+{{end}}
