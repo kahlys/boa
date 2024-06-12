@@ -1,0 +1,26 @@
+output:
+  sort-results: true
+
+linters:
+  disable-all: true
+  enable:
+    - goconst
+    - gofumpt
+    - goimports
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - staticcheck
+    - unused
+    - revive
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/kahlys/boa
+  goconst:
+    min-occurrences: 5
+
+issues:
+  exclude-dirs:
+    - example
