@@ -369,11 +369,6 @@ func handleCommandPOST(w http.ResponseWriter, r *http.Request) {
 		outputErr = err.Error()
 	}
 
-	if r.Method != http.MethodPost {
-		http.Error(w, "invalid method", http.StatusMethodNotAllowed)
-		return
-	}
-
 	if err := commandOutputHTMLSrc.Execute(
 		w,
 		struct {
