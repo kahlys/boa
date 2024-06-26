@@ -1,2 +1,3 @@
 # boa
-golang cobra gui
+
+boa is a poc to add a gui for cobra
