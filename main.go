@@ -367,6 +367,8 @@ func handleCommandPOST(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("cmd_run_failed", "reason", err.Error(), "cmd", currentCmd, "flags", flags)
 		outputErr = err.Error()
+	} else if output == "" {
+		output = "Command executed successfully"
 	}
 
 	if err := commandOutputHTMLSrc.Execute(
