@@ -367,11 +367,8 @@ func handleCommandPOST(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("cmd_run_failed", "reason", err.Error(), "cmd", currentCmd, "flags", flags)
 		outputErr = err.Error()
-	}
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "invalid method", http.StatusMethodNotAllowed)
-		return
+	} else if output == "" {
+		output = "Command executed successfully"
 	}
 
 	if err := commandOutputHTMLSrc.Execute(

@@ -33,6 +33,7 @@ func NewCommand() *cobra.Command {
 	root.PersistentFlags().StringVar(&flagGlobal, "global", "", "a global flag")
 
 	root.AddCommand(subCommand())
+	root.AddCommand(emptyCommand())
 	root.AddCommand(norunCommand())
 
 	return root
@@ -70,5 +71,13 @@ func norunCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "norun",
 		Short: "A command with no run",
+	}
+}
+
+func emptyCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "empty",
+		Short: "A command that does nothing",
+		Run:   func(cmd *cobra.Command, args []string) {},
 	}
 }
