@@ -1,12 +1,10 @@
-package main
+package boa
 
 import (
 	"bytes"
 	_ "embed"
-	"flag"
 	"fmt"
 	"html/template"
-	"log"
 	"log/slog"
 	"net/http"
 	"path"
@@ -15,55 +13,67 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-
-	"github.com/kahlys/boa/example"
 )
 
-var cmds = NewCommandMap(example.NewCommand())
+// Server is a simple web server that displays the commands and allows the user to run them.
+type Server struct {
+	Port int
 
-func main() {
-	port := flag.Int("port", 8080, "port to listen on")
-	flag.Parse()
+	commands    commandMap
+	httpHandler http.Handler
+}
 
-	log.SetFlags(0)
+// New creates a new Server with the given port and cobra command.
+func New(cmd *cobra.Command, port int) *Server {
+	s := &Server{
+		Port:     port,
+		commands: newCommandMap(cmd),
+	}
+	s.httpHandler = s.newHTTPHandler()
+	return s
+}
 
-	slog.Info("server_start", "address", fmt.Sprintf("http://localhost:%d", *port))
-
-	http.HandleFunc("/", handler)
-	if err := http.ListenAndServe(fmt.Sprintf(":%v", *port), nil); err != nil {
+// ListenAndServe starts the server and listens on the configured port.
+func (s *Server) ListenAndServe() {
+	slog.Info("server_start", "address", fmt.Sprintf("http://localhost:%d", s.Port))
+	err := http.ListenAndServe(fmt.Sprintf(":%v", s.Port), s.httpHandler)
+	if err != nil {
 		slog.Error("server_stop", "reason", err.Error())
 	}
 }
 
-type CommandMap struct {
+type commandMap struct {
 	root string
 	cmds map[string]*cobra.Command
 }
 
-func NewCommandMap(cmd *cobra.Command) CommandMap {
-	cmds := CommandMap{
+func newCommandMap(cmd *cobra.Command) commandMap {
+	cmds := commandMap{
 		root: fmt.Sprintf("/%v", cmd.Name()),
 		cmds: map[string]*cobra.Command{},
 	}
 	cmd.SetHelpCommand(&cobra.Command{Hidden: true})
-	cmds.Add(fmt.Sprintf("/%v", cmd.Name()), cmd)
+	cmds.add(fmt.Sprintf("/%v", cmd.Name()), cmd)
 	for _, c := range cmd.Commands() {
 		addSubCommandsRecursive(c, cmds, fmt.Sprintf("%v/%v", "", cmd.Name()))
 	}
 	return cmds
 }
 
-func addSubCommandsRecursive(cmd *cobra.Command, cmds CommandMap, name string) {
-	cmds.Add(fmt.Sprintf("%v/%v", name, cmd.Name()), cmd)
+func addSubCommandsRecursive(cmd *cobra.Command, cmds commandMap, name string) {
+	cmds.add(fmt.Sprintf("%v/%v", name, cmd.Name()), cmd)
 	for _, c := range cmd.Commands() {
 		addSubCommandsRecursive(c, cmds, fmt.Sprintf("%v/%v", name, cmd.Name()))
 	}
 }
 
-func (c CommandMap) Execute(name string, args ...string) (string, error) {
+func (c commandMap) Execute(name string, args ...string) (string, error) {
 	buf := &bytes.Buffer{}
 
-	cmd := example.NewCommand()
+	cmd, ok := c.get(c.root)
+	if !ok {
+		return "", fmt.Errorf("command not found")
+	}
 
 	args = append(
 		c.commandPath(name),
@@ -81,31 +91,31 @@ func (c CommandMap) Execute(name string, args ...string) (string, error) {
 	return buf.String(), nil
 }
 
-func (c CommandMap) commandPath(name string) []string {
+func (c commandMap) commandPath(name string) []string {
 	name = strings.TrimPrefix(name, c.root)
 	name = strings.TrimPrefix(name, "/")
 	return strings.Split(name, "/")
 }
 
-func (c CommandMap) Add(name string, cmd *cobra.Command) {
+func (c commandMap) add(name string, cmd *cobra.Command) {
 	c.cmds[name] = cmd
 }
 
-func (c CommandMap) Get(name string) (*cobra.Command, bool) {
+func (c commandMap) get(name string) (*cobra.Command, bool) {
 	name = c.fixName(name)
 	cmd, ok := c.cmds[name]
 	return cmd, ok
 }
 
-func (c CommandMap) fixName(name string) string {
+func (c commandMap) fixName(name string) string {
 	if name == "" || name == "/" {
 		return c.root
 	}
 	return name
 }
 
-func (c CommandMap) IsRunable(name string) bool {
-	cmd, ok := c.Get(name)
+func (c commandMap) IsRunable(name string) bool {
+	cmd, ok := c.get(name)
 	if !ok {
 		return false
 	}
@@ -119,15 +129,10 @@ type Command struct {
 	Shorthand   string
 }
 
-// AllCommands returns a slice of all commands in the CommandMap.
-func (c CommandMap) AllCommands() []Command {
-	return c.AllCommandsWithPattern("")
-}
-
-// AllCommandsWithPattern returns a list of commands that match the given pattern.
+// commandsWithPattern returns a list of commands that match the given pattern.
 // It searches for the pattern in the command names, short descriptions, long descriptions, and usage strings.
 // The returned commands are sorted by their paths in ascending order.
-func (c CommandMap) AllCommandsWithPattern(pattern string) []Command {
+func (c commandMap) commandsWithPattern(pattern string) []Command {
 	pattern = strings.ToLower(pattern)
 	cmds := []Command{}
 	for k := range c.cmds {
@@ -147,9 +152,10 @@ func (c CommandMap) AllCommandsWithPattern(pattern string) []Command {
 	return cmds
 }
 
-func (c CommandMap) SubCommands(name string) []Command {
+// subCommands returns a list of subcommands for the given command name.
+func (c commandMap) subCommands(name string) []Command {
 	name = c.fixName(name)
-	cur, ok := c.Get(name)
+	cur, ok := c.get(name)
 	if !ok {
 		return []Command{}
 	}
@@ -179,8 +185,8 @@ type Flag struct {
 	Type        string
 }
 
-func (c CommandMap) Flags(name string) []Flag {
-	cur, ok := c.Get(name)
+func (c commandMap) flags(name string) []Flag {
+	cur, ok := c.get(name)
 	if !ok {
 		return []Flag{}
 	}
@@ -245,9 +251,28 @@ var (
 	pageHTMLTemplateSrc     = template.Must(template.New("page").Parse(pageFile))
 )
 
-func handleList(w http.ResponseWriter, r *http.Request) {
+func (s *Server) newHTTPHandler() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", s.handler)
+	return mux
+}
+
+func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
+	switch p := r.URL.Path; {
+	case p == "/":
+		s.handleList(w, r)
+	case p == "/favicon.ico":
+		return
+	case strings.HasPrefix(p, "/command/"):
+		s.handleCommand(w, r)
+	default:
+		http.NotFound(w, r)
+	}
+}
+
+func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		handleListPOST(w, r)
+		s.handleListPOST(w, r)
 		return
 	}
 
@@ -260,7 +285,7 @@ func handleList(w http.ResponseWriter, r *http.Request) {
 		struct {
 			Commands []Command
 		}{
-			Commands: cmds.AllCommandsWithPattern(pattern),
+			Commands: s.commands.commandsWithPattern(pattern),
 		},
 	); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -270,7 +295,7 @@ func handleList(w http.ResponseWriter, r *http.Request) {
 	generatePageHTML(w, "List of commands", str.String())
 }
 
-func handleListPOST(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleListPOST(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -284,7 +309,7 @@ func handleListPOST(w http.ResponseWriter, r *http.Request) {
 		struct {
 			Commands []Command
 		}{
-			Commands: cmds.AllCommandsWithPattern(pattern),
+			Commands: s.commands.commandsWithPattern(pattern),
 		},
 	); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -292,9 +317,9 @@ func handleListPOST(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleCommand(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleCommand(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		handleCommandPOST(w, r)
+		s.handleCommandPOST(w, r)
 		return
 	}
 
@@ -302,7 +327,7 @@ func handleCommand(w http.ResponseWriter, r *http.Request) {
 	slog.Info("page_command", "cmd", currentCmd)
 
 	var str bytes.Buffer
-	c, ok := cmds.Get(currentCmd)
+	c, ok := s.commands.get(currentCmd)
 	if !ok {
 		http.Error(w, "command not found", http.StatusNotFound)
 		return
@@ -322,9 +347,9 @@ func handleCommand(w http.ResponseWriter, r *http.Request) {
 			Short:       c.Short,
 			Long:        c.Long,
 			Path:        currentCmd,
-			IsRunnable:  cmds.IsRunable(currentCmd),
-			Flags:       cmds.Flags(currentCmd),
-			SubCommands: cmds.SubCommands(currentCmd),
+			IsRunnable:  s.commands.IsRunable(currentCmd),
+			Flags:       s.commands.flags(currentCmd),
+			SubCommands: s.commands.subCommands(currentCmd),
 		},
 	); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -334,7 +359,7 @@ func handleCommand(w http.ResponseWriter, r *http.Request) {
 	generatePageHTML(w, "Command", str.String())
 }
 
-func handleCommandPOST(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleCommandPOST(w http.ResponseWriter, r *http.Request) {
 	currentCmd := strings.TrimPrefix(r.URL.Path, "/command")
 	slog.Info("page_command_run", "cmd", currentCmd)
 
@@ -363,7 +388,7 @@ func handleCommandPOST(w http.ResponseWriter, r *http.Request) {
 	slog.Info("command_exec", "cmd", currentCmd, "flags", flags, "args", args)
 
 	output, outputErr := "", ""
-	output, err = cmds.Execute(currentCmd, append(args, flags...)...)
+	output, err = s.commands.Execute(currentCmd, append(args, flags...)...)
 	if err != nil {
 		slog.Error("cmd_run_failed", "reason", err.Error(), "cmd", currentCmd, "flags", flags)
 		outputErr = err.Error()
@@ -383,19 +408,6 @@ func handleCommandPOST(w http.ResponseWriter, r *http.Request) {
 	); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	switch p := r.URL.Path; {
-	case p == "/":
-		handleList(w, r)
-	case p == "/favicon.ico":
-		return
-	case strings.HasPrefix(p, "/command/"):
-		handleCommand(w, r)
-	default:
-		http.NotFound(w, r)
 	}
 }
 
