@@ -1,3 +1,3 @@
-# boa
+![boa](.github/logo.png)
 
-boa is a poc to add a gui for cobra
+Boa is a library to generate web interface for [cobra](https://github.com/spf13/cobra) CLI applications.
