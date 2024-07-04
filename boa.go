@@ -280,14 +280,7 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 	slog.Info("page_list", "search", pattern)
 
 	var str bytes.Buffer
-	if err := listHTMLTemplateSrc.Execute(
-		&str,
-		struct {
-			Commands []Command
-		}{
-			Commands: s.commands.commandsWithPattern(pattern),
-		},
-	); err != nil {
+	if err := listHTMLTemplateSrc.Execute(&str, nil); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
