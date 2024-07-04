@@ -1,7 +1,7 @@
   <tbody id="table-body">
     {{range .Commands}}
     <tr data-href="/command/{{.Path}}">
-      <td><a href="/command/{{.Path}}">{{.Name}}</a></td>
+      <td><a href="/command/{{.Path}}">{{.NameComplete}}</a></td>
       <td>{{.Description}}</td>
     </tr>
     {{end}}
