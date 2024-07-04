@@ -120,10 +120,11 @@ func (c commandMap) IsRunable(name string) bool {
 }
 
 type Command struct {
-	Name        string
-	Path        string
-	Description string
-	Shorthand   string
+	Name         string
+	NameComplete string
+	Path         string
+	Description  string
+	Use          string
 }
 
 // commandsWithPattern returns a list of commands that match the given pattern.
@@ -141,7 +142,15 @@ func (c commandMap) commandsWithPattern(pattern string) []Command {
 		default:
 			continue
 		}
-		cmds = append(cmds, Command{Name: c.cmds[k].Name(), Path: k, Description: c.cmds[k].Short, Shorthand: c.cmds[k].Use})
+		cmds = append(
+			cmds,
+			Command{
+				Name:         c.cmds[k].Name(),
+				NameComplete: strings.TrimSpace(strings.ReplaceAll(k, "/", " ")),
+				Path:         k,
+				Description:  c.cmds[k].Short,
+				Use:          c.cmds[k].Use,
+			})
 	}
 	sort.Slice(cmds, func(i, j int) bool {
 		return cmds[i].Path < cmds[j].Path
@@ -170,7 +179,7 @@ func (c commandMap) subCommands(name string) []Command {
 		if !keepSub(sub) {
 			continue
 		}
-		subs = append(subs, Command{Name: sub.Name(), Path: path.Join(name, sub.Name()), Description: sub.Short, Shorthand: sub.Use})
+		subs = append(subs, Command{Name: sub.Name(), Path: path.Join(name, sub.Name()), Description: sub.Short, Use: sub.Use})
 	}
 	return subs
 }
