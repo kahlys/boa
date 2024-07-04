@@ -53,10 +53,7 @@ func newCommandMap(cmd *cobra.Command) commandMap {
 		cmds: map[string]*cobra.Command{},
 	}
 	cmd.SetHelpCommand(&cobra.Command{Hidden: true})
-	cmds.add(fmt.Sprintf("/%v", cmd.Name()), cmd)
-	for _, c := range cmd.Commands() {
-		addSubCommandsRecursive(c, cmds, fmt.Sprintf("%v/%v", "", cmd.Name()))
-	}
+	addSubCommandsRecursive(cmd, cmds, "")
 	return cmds
 }
 
