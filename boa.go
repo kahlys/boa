@@ -2,7 +2,7 @@ package boa
 
 import (
 	"bytes"
-	_ "embed"
+	"embed"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -19,24 +19,54 @@ import (
 type Server struct {
 	Port int
 
-	commands    commandMap
-	httpHandler http.Handler
+	commands commandMap
+
+	tmplCmd      *template.Template
+	tmplCmdOut   *template.Template
+	tmplList     *template.Template
+	tmplListBody *template.Template
+	tmplIndex    *template.Template
+
+	staticBootstrap template.CSS
+	staticHTMX      template.JS
 }
 
+//go:embed templates
+var templates embed.FS
+
 // New creates a new Server with the given port and cobra command.
-func New(cmd *cobra.Command, port int) *Server {
-	s := &Server{
-		Port:     port,
-		commands: newCommandMap(cmd),
+func New(cmd *cobra.Command, port int) (*Server, error) {
+	staticBootstrap, err := templates.ReadFile("templates/external/bootstrap.min.css")
+	if err != nil {
+		return nil, err
 	}
-	s.httpHandler = s.newHTTPHandler()
-	return s
+	staticHTMX, err := templates.ReadFile("templates/external/htmx.min.js")
+	if err != nil {
+		return nil, err
+	}
+
+	s := Server{
+		Port: port,
+
+		commands: newCommandMap(cmd),
+
+		staticBootstrap: template.CSS(staticBootstrap),
+		staticHTMX:      template.JS(staticHTMX),
+
+		tmplCmd:      template.Must(template.ParseFS(templates, "templates/command.gohtml")),
+		tmplCmdOut:   template.Must(template.ParseFS(templates, "templates/command_output.gohtml")),
+		tmplList:     template.Must(template.ParseFS(templates, "templates/list.gohtml")),
+		tmplListBody: template.Must(template.ParseFS(templates, "templates/list_body.gohtml")),
+		tmplIndex:    template.Must(template.ParseFS(templates, "templates/index.gohtml")),
+	}
+
+	return &s, nil
 }
 
 // ListenAndServe starts the server and listens on the configured port.
 func (s *Server) ListenAndServe() {
 	slog.Info("server_start", "address", fmt.Sprintf("http://localhost:%d", s.Port))
-	err := http.ListenAndServe(fmt.Sprintf(":%v", s.Port), s.httpHandler)
+	err := http.ListenAndServe(fmt.Sprintf(":%v", s.Port), s.newHTTPHandler())
 	if err != nil {
 		slog.Error("server_stop", "reason", err.Error())
 	}
@@ -228,35 +258,6 @@ func (c commandMap) flags(name string) []Flag {
 	return flags
 }
 
-//go:embed templates/bootstrap.min.css
-var cssFile string
-
-//go:embed templates/htmx.min.js
-var htmxFile string
-
-//go:embed templates/command.gohtml
-var cmdFile string
-
-//go:embed templates/command_output.gohtml
-var cmdOutputFile string
-
-//go:embed templates/list.gohtml
-var listFile string
-
-//go:embed templates/list_body.gohtml
-var listBodyFile string
-
-//go:embed templates/page.gohtml
-var pageFile string
-
-var (
-	commandHTMLTemplateSrc  = template.Must(template.New("commandHTML").Parse(cmdFile))
-	commandOutputHTMLSrc    = template.Must(template.New("commandOutput").Parse(cmdOutputFile))
-	listHTMLTemplateSrc     = template.Must(template.New("list").Parse(listFile))
-	listBodyHTMLTemplateSrc = template.Must(template.New("listBody").Parse(listBodyFile))
-	pageHTMLTemplateSrc     = template.Must(template.New("page").Parse(pageFile))
-)
-
 func (s *Server) newHTTPHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.handler)
@@ -286,12 +287,12 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 	slog.Info("page_list", "search", pattern)
 
 	var str bytes.Buffer
-	if err := listHTMLTemplateSrc.Execute(&str, nil); err != nil {
+	if err := s.tmplList.Execute(&str, nil); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	generatePageHTML(w, "List of commands", str.String())
+	s.generatePageHTML(w, "List of commands", str.String())
 }
 
 func (s *Server) handleListPOST(w http.ResponseWriter, r *http.Request) {
@@ -303,7 +304,7 @@ func (s *Server) handleListPOST(w http.ResponseWriter, r *http.Request) {
 
 	slog.Info("page_list_body", "search", pattern)
 
-	if err := listBodyHTMLTemplateSrc.Execute(
+	if err := s.tmplListBody.Execute(
 		w,
 		struct {
 			Commands []Command
@@ -331,7 +332,7 @@ func (s *Server) handleCommand(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "command not found", http.StatusNotFound)
 		return
 	}
-	if err := commandHTMLTemplateSrc.Execute(
+	if err := s.tmplCmd.Execute(
 		&str,
 		struct {
 			Name        string
@@ -355,7 +356,7 @@ func (s *Server) handleCommand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	generatePageHTML(w, "Command", str.String())
+	s.generatePageHTML(w, "Command", str.String())
 }
 
 func (s *Server) handleCommandPOST(w http.ResponseWriter, r *http.Request) {
@@ -395,7 +396,7 @@ func (s *Server) handleCommandPOST(w http.ResponseWriter, r *http.Request) {
 		output = "Command executed successfully"
 	}
 
-	if err := commandOutputHTMLSrc.Execute(
+	if err := s.tmplCmdOut.Execute(
 		w,
 		struct {
 			Output      string
@@ -410,8 +411,8 @@ func (s *Server) handleCommandPOST(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func generatePageHTML(w http.ResponseWriter, title, content string) {
-	if err := pageHTMLTemplateSrc.Execute(
+func (s *Server) generatePageHTML(w http.ResponseWriter, title, content string) {
+	if err := s.tmplIndex.Execute(
 		w,
 		struct {
 			Title   string
@@ -420,9 +421,9 @@ func generatePageHTML(w http.ResponseWriter, title, content string) {
 			Content template.HTML
 		}{
 			Title:   title,
-			CSS:     template.CSS(cssFile),
+			CSS:     template.CSS(s.staticBootstrap),
 			Content: template.HTML(content),
-			JS:      template.JS(htmxFile),
+			JS:      template.JS(s.staticHTMX),
 		},
 	); err != nil {
 		slog.Info("html_page_generation_failed:", "reason", err.Error())
