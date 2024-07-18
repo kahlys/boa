@@ -14,6 +14,10 @@ func main() {
 
 	log.SetFlags(0)
 
-	server := boa.New(cli.NewCommand(), *port)
+	server, err := boa.New(cli.NewCommand(), *port)
+	if err != nil {
+		log.Fatalf("failed to create server: %v", err)
+	}
+
 	server.ListenAndServe()
 }
