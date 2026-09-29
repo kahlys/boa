@@ -1,0 +1,43 @@
+/* Layout */
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+
+.menu-panel {
+    width: 250px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    overflow-y: auto;
+}
+
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* Table styling */
+.table-row-clickable {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.table-row-clickable:hover {
+    background-color: #e9ecef;
+}
+
+/* Menu values info box */
+.menu-values {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #e7f3ff;
+    border-left: 4px solid #0d6efd;
+    border-radius: 4px;
+}
+
+.menu-values p {
+    margin: 8px 0;
+    font-size: 14px;
+}
