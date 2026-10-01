@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { OpenFile, OpenDirectory } from '../../wailsjs/go/main/App';
 
 interface MenuPanelProps {
     menuInput1: string;
@@ -13,6 +14,30 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({
     menuInput2,
     setMenuInput2,
 }) => {
+    const [filePath, setFilePath] = useState<string>('');
+
+    const handleFilePickerClick = async () => {
+        try {
+            const path = await OpenFile();
+            if (path) {
+                setFilePath(path);
+            }
+        } catch (err) {
+            console.error('Error opening file picker:', err);
+        }
+    };
+
+    const handleDirectoryPickerClick = async () => {
+        try {
+            const path = await OpenDirectory();
+            if (path) {
+                setFilePath(path);
+            }
+        } catch (err) {
+            console.error('Error opening directory picker:', err);
+        }
+    };
+
     return (
         <aside className="menu-panel">
             <h3>Menu</h3>
@@ -32,6 +57,32 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({
                         value={menuInput2}
                         onChange={(e) => setMenuInput2(e.target.value)}
                     />
+                </div>
+                <div className="form-group">
+                    <label>Path</label>
+                    <input
+                        type="text"
+                        value={filePath}
+                        readOnly
+                        placeholder="No path selected"
+                        style={{ marginBottom: '8px' }}
+                    />
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-primary"
+                            onClick={handleFilePickerClick}
+                        >
+                            Browse File
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-secondary"
+                            onClick={handleDirectoryPickerClick}
+                        >
+                            Browse Directory
+                        </button>
+                    </div>
                 </div>
             </form>
         </aside>

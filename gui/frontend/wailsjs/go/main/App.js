@@ -17,3 +17,11 @@ export function Greet(arg1) {
 export function List() {
   return window['go']['main']['App']['List']();
 }
+
+export function OpenDirectory() {
+  return window['go']['main']['App']['OpenDirectory']();
+}
+
+export function OpenFile() {
+  return window['go']['main']['App']['OpenFile']();
+}

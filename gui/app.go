@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -106,4 +107,18 @@ func (a *App) ExecuteWithInput(path string, positionalArgs []string, flagValues 
 	fmt.Println(out)
 
 	return out, err
+}
+
+// OpenFile opens a file picker dialog and returns the selected file path
+func (a *App) OpenFile() (string, error) {
+	return runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "Select a file",
+	})
+}
+
+// OpenDirectory opens a directory picker dialog and returns the selected directory path
+func (a *App) OpenDirectory() (string, error) {
+	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "Select a directory",
+	})
 }

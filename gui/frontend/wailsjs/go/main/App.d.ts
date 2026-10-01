@@ -9,3 +9,7 @@ export function ExecuteWithInput(arg1:string,arg2:Array<string>,arg3:Record<stri
 export function Greet(arg1:string):Promise<string>;
 
 export function List():Promise<Array<main.Command>>;
+
+export function OpenDirectory():Promise<string>;
+
+export function OpenFile():Promise<string>;
