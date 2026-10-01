@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { main } from '../../wailsjs/go/models';
 import { ExecuteWithInput } from '../../wailsjs/go/main/App';
+import { ArrayInput } from './ArrayInput';
 
 type CommandComplete = main.CommandComplete;
 type Flag = main.Flag;
@@ -169,67 +170,14 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                                     <label htmlFor="args-container" style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>Args</label>
                                 </div>
                                 <div id="args-container">
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexWrap: 'wrap',
-                                            gap: '6px',
-                                            padding: '6px',
-                                            border: '1px solid #ced4da',
-                                            borderRadius: '4px',
-                                            backgroundColor: 'white',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        {argsValues.map((value, index) => (
-                                            <div
-                                                key={index}
-                                                style={{
-                                                    backgroundColor: '#adb5bd',
-                                                    color: 'white',
-                                                    padding: '4px 8px',
-                                                    borderRadius: '4px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '6px',
-                                                    fontSize: '14px',
-                                                    whiteSpace: 'nowrap',
-                                                }}
-                                            >
-                                                {value}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeArg(index)}
-                                                    style={{
-                                                        background: 'none',
-                                                        border: 'none',
-                                                        color: 'white',
-                                                        cursor: 'pointer',
-                                                        fontSize: '16px',
-                                                        padding: '0',
-                                                        lineHeight: '1',
-                                                    }}
-                                                >
-                                                    ×
-                                                </button>
-                                            </div>
-                                        ))}
-                                        <input
-                                            type="text"
-                                            value={argsInputValue}
-                                            onChange={(e) => handleArgsInputChange(e.target.value)}
-                                            onKeyPress={handleArgsKeyPress}
-                                            style={{
-                                                border: 'none',
-                                                outline: 'none',
-                                                flex: 1,
-                                                minWidth: '150px',
-                                                padding: '0',
-                                                fontSize: '14px',
-                                            }}
-                                            placeholder="positional argument (press Enter to add)"
-                                        />
-                                    </div>
+                                    <ArrayInput
+                                        values={argsValues}
+                                        inputValue={argsInputValue}
+                                        onInputChange={handleArgsInputChange}
+                                        onKeyPress={handleArgsKeyPress}
+                                        onRemove={removeArg}
+                                        placeholder="positional argument (press Enter to add)"
+                                    />
                                 </div>
                             </div>
                         {/* )} */}
@@ -275,71 +223,16 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                                             </div>
                                         </div>
                                     ) : flag.Type === 'array' ? (
-                                        <>
-                                            <div id={`flag-${flag.Name}-container`}>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        flexWrap: 'wrap',
-                                                        gap: '6px',
-                                                        padding: '6px',
-                                                        border: '1px solid #ced4da',
-                                                        borderRadius: '4px',
-                                                        backgroundColor: 'white',
-                                                        alignItems: 'center',
-                                                    }}
-                                                >
-                                                    {((flagValues[flag.Name] || []) as string[]).map((value, index) => (
-                                                        <div
-                                                            key={index}
-                                                            style={{
-                                                                backgroundColor: '#adb5bd',
-                                                                color: 'white',
-                                                                padding: '4px 8px',
-                                                                borderRadius: '4px',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: '6px',
-                                                                fontSize: '14px',
-                                                                whiteSpace: 'nowrap',
-                                                            }}
-                                                        >
-                                                            {value}
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => removeFlagArrayValue(flag.Name, index)}
-                                                                style={{
-                                                                    background: 'none',
-                                                                    border: 'none',
-                                                                    color: 'white',
-                                                                    cursor: 'pointer',
-                                                                    fontSize: '16px',
-                                                                    padding: '0',
-                                                                    lineHeight: '1',
-                                                                }}
-                                                            >
-                                                                ×
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                    <input
-                                                        type="text"
-                                                        value={flagInputValues[flag.Name] || ''}
-                                                        onChange={(e) => handleFlagArrayInputChange(flag.Name, e.target.value)}
-                                                        onKeyPress={(e) => handleFlagArrayKeyPress(e, flag.Name)}
-                                                        style={{
-                                                            border: 'none',
-                                                            outline: 'none',
-                                                            flex: 1,
-                                                            minWidth: '150px',
-                                                            padding: '0',
-                                                            fontSize: '14px',
-                                                        }}
-                                                        placeholder={`${flag.Description || flag.Name} (press Enter to add)`}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </>
+                                        <div id={`flag-${flag.Name}-container`}>
+                                            <ArrayInput
+                                                values={(flagValues[flag.Name] || []) as string[]}
+                                                inputValue={flagInputValues[flag.Name] || ''}
+                                                onInputChange={(value) => handleFlagArrayInputChange(flag.Name, value)}
+                                                onKeyPress={(e) => handleFlagArrayKeyPress(e, flag.Name)}
+                                                onRemove={(index) => removeFlagArrayValue(flag.Name, index)}
+                                                placeholder={`${flag.Description || flag.Name} (press Enter to add)`}
+                                            />
+                                        </div>
                                     ) : (
                                         <input
                                             type="text"

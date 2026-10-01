@@ -12,7 +12,7 @@ export const ListPage: React.FC<ListPageProps> = ({ resultList, onCommandClick }
     return (
         <>
             <p>The List</p>
-            <table>
+            <table className="table">
                 <thead>
                     <tr>
                         <th>Command</th>
