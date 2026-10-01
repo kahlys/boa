@@ -10,10 +10,6 @@ export function ExecuteWithInput(arg1, arg2, arg3) {
   return window['go']['main']['App']['ExecuteWithInput'](arg1, arg2, arg3);
 }
 
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
-}
-
 export function List() {
   return window['go']['main']['App']['List']();
 }

@@ -161,3 +161,18 @@
 .btn-submit {
   margin-top: 16px;
 }
+
+/* Utility Styles */
+.output-content,
+.error-content {
+  margin-top: 8px;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+}
+
+.path-input {
+  margin-bottom: 8px;
+}

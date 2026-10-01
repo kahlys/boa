@@ -129,6 +129,7 @@ export const DetailPage: React.FC<DetailPageProps> = ({
             setLoading(false);
         }
     };
+
     return (
         <>
             <div className="page-header">
@@ -221,14 +222,14 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                     {output && (
                         <div className="output-box">
                             <strong>Output:</strong>
-                            <div style={{ marginTop: '8px' }}>{output}</div>
+                            <div className="output-content">{output}</div>
                         </div>
                     )}
 
                     {error && (
                         <div className="error-box">
                             <strong>Error:</strong>
-                            <div style={{ marginTop: '8px' }}>{error}</div>
+                            <div className="error-content">{error}</div>
                         </div>
                     )}
                 </div>

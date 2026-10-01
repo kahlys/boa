@@ -23,7 +23,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({
                 setFilePath(path);
             }
         } catch (err) {
-            console.error('Error opening file picker:', err);
+            // Handle error silently
         }
     };
 
@@ -34,7 +34,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({
                 setFilePath(path);
             }
         } catch (err) {
-            console.error('Error opening directory picker:', err);
+            // Handle error silently
         }
     };
 
@@ -65,9 +65,9 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({
                         value={filePath}
                         readOnly
                         placeholder="No path selected"
-                        style={{ marginBottom: '8px' }}
+                        className="path-input"
                     />
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="button-group">
                         <button
                             type="button"
                             className="btn btn-sm btn-primary"

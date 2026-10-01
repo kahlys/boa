@@ -6,8 +6,6 @@ export function Command(arg1:string):Promise<main.CommandComplete>;
 
 export function ExecuteWithInput(arg1:string,arg2:Array<string>,arg3:Record<string, any>):Promise<string>;
 
-export function Greet(arg1:string):Promise<string>;
-
 export function List():Promise<Array<main.Command>>;
 
 export function OpenDirectory():Promise<string>;
