@@ -20,8 +20,10 @@ export const DetailPage: React.FC<DetailPageProps> = ({
     onBack,
     onCommandClick,
 }) => {
-    const [argsInputs, setArgsInputs] = useState<string[]>(['']);
+    const [argsValues, setArgsValues] = useState<string[]>([]);
+    const [argsInputValue, setArgsInputValue] = useState<string>('');
     const [flagValues, setFlagValues] = useState<Record<string, any>>({});
+    const [flagInputValues, setFlagInputValues] = useState<Record<string, string>>({});
     const [output, setOutput] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState(false);
@@ -31,31 +33,41 @@ export const DetailPage: React.FC<DetailPageProps> = ({
         console.log('DetailPage: cmd changed', cmd);
         const flags = cmd?.Flags || [];
         const initialized: Record<string, any> = {};
+        const inputValues: Record<string, string> = {};
         flags.forEach((flag) => {
             if (flag.Type === 'bool') {
                 initialized[flag.Name] = false;
             } else if (flag.Type === 'array') {
-                initialized[flag.Name] = [''];
+                initialized[flag.Name] = [];
+                inputValues[flag.Name] = '';
             } else {
                 initialized[flag.Name] = '';
             }
         });
         console.log('DetailPage: initialized flags', initialized);
         setFlagValues(initialized);
+        setFlagInputValues(inputValues);
         // Reset args and output when changing commands
-        setArgsInputs(['']);
+        setArgsValues([]);
+        setArgsInputValue('');
         setOutput('');
         setError('');
     }, [cmd]);
 
-    const addArgsInput = () => {
-        setArgsInputs([...argsInputs, '']);
+    const handleArgsInputChange = (value: string) => {
+        setArgsInputValue(value);
     };
 
-    const handleArgsChange = (index: number, value: string) => {
-        const updated = [...argsInputs];
-        updated[index] = value;
-        setArgsInputs(updated);
+    const handleArgsKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && argsInputValue.trim()) {
+            e.preventDefault();
+            setArgsValues([...argsValues, argsInputValue.trim()]);
+            setArgsInputValue('');
+        }
+    };
+
+    const removeArg = (index: number) => {
+        setArgsValues(argsValues.filter((_, i) => i !== index));
     };
 
     const handleFlagChange = (flagName: string, value: any) => {
@@ -65,19 +77,32 @@ export const DetailPage: React.FC<DetailPageProps> = ({
         }));
     };
 
-    const addFlagArrayInput = (flagName: string) => {
-        setFlagValues((prev) => ({
+    const handleFlagArrayInputChange = (flagName: string, value: string) => {
+        setFlagInputValues((prev) => ({
             ...prev,
-            [flagName]: [...(prev[flagName] as string[]), ''],
+            [flagName]: value,
         }));
     };
 
-    const handleFlagArrayChange = (flagName: string, index: number, value: string) => {
-        setFlagValues((prev) => {
-            const updated = [...(prev[flagName] as string[])];
-            updated[index] = value;
-            return { ...prev, [flagName]: updated };
-        });
+    const handleFlagArrayKeyPress = (e: React.KeyboardEvent, flagName: string) => {
+        if (e.key === 'Enter' && flagInputValues[flagName]?.trim()) {
+            e.preventDefault();
+            setFlagValues((prev) => ({
+                ...prev,
+                [flagName]: [...(prev[flagName] as string[]), flagInputValues[flagName].trim()],
+            }));
+            setFlagInputValues((prev) => ({
+                ...prev,
+                [flagName]: '',
+            }));
+        }
+    };
+
+    const removeFlagArrayValue = (flagName: string, index: number) => {
+        setFlagValues((prev) => ({
+            ...prev,
+            [flagName]: (prev[flagName] as string[]).filter((_, i) => i !== index),
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -92,8 +117,8 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                 return;
             }
 
-            // Filter out empty positional arguments
-            const args = argsInputs.filter((arg) => arg.trim());
+            // Use the submitted args values
+            const args = argsValues;
 
             // Call Go backend with structured data - it handles flag building
             const result = await ExecuteWithInput(cmd.Path, args, flagValues);
@@ -142,26 +167,67 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                                     <label htmlFor="args-container" style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>Args</label>
                                 </div>
                                 <div id="args-container">
-                                    {argsInputs.map((value, index) => (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: '6px',
+                                            padding: '6px',
+                                            border: '1px solid #ced4da',
+                                            borderRadius: '4px',
+                                            backgroundColor: 'white',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        {argsValues.map((value, index) => (
+                                            <div
+                                                key={index}
+                                                style={{
+                                                    backgroundColor: '#007bff',
+                                                    color: 'white',
+                                                    padding: '4px 8px',
+                                                    borderRadius: '4px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    fontSize: '14px',
+                                                    whiteSpace: 'nowrap',
+                                                }}
+                                            >
+                                                {value}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeArg(index)}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: 'white',
+                                                        cursor: 'pointer',
+                                                        fontSize: '16px',
+                                                        padding: '0',
+                                                        lineHeight: '1',
+                                                    }}
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
                                         <input
-                                            key={index}
                                             type="text"
-                                            value={value}
-                                            onChange={(e) => handleArgsChange(index, e.target.value)}
-                                            className="form-control form-control-sm"
-                                            placeholder="positional argument"
-                                            style={{ marginBottom: '8px' }}
+                                            value={argsInputValue}
+                                            onChange={(e) => handleArgsInputChange(e.target.value)}
+                                            onKeyPress={handleArgsKeyPress}
+                                            style={{
+                                                border: 'none',
+                                                outline: 'none',
+                                                flex: 1,
+                                                minWidth: '150px',
+                                                padding: '0',
+                                                fontSize: '14px',
+                                            }}
+                                            placeholder="positional argument (press Enter to add)"
                                         />
-                                    ))}
-                                </div>
-                                <div>
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-outline-secondary"
-                                        onClick={addArgsInput}
-                                        >
-                                        add argument
-                                    </button>
+                                    </div>
                                 </div>
                             </div>
                         {/* )} */}
@@ -209,25 +275,68 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                                     ) : flag.Type === 'array' ? (
                                         <>
                                             <div id={`flag-${flag.Name}-container`}>
-                                                {((flagValues[flag.Name] || []) as string[]).map((value, index) => (
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexWrap: 'wrap',
+                                                        gap: '6px',
+                                                        padding: '6px',
+                                                        border: '1px solid #ced4da',
+                                                        borderRadius: '4px',
+                                                        backgroundColor: 'white',
+                                                        alignItems: 'center',
+                                                    }}
+                                                >
+                                                    {((flagValues[flag.Name] || []) as string[]).map((value, index) => (
+                                                        <div
+                                                            key={index}
+                                                            style={{
+                                                                backgroundColor: '#adb5bd',
+                                                                color: 'white',
+                                                                padding: '4px 8px',
+                                                                borderRadius: '4px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '6px',
+                                                                fontSize: '14px',
+                                                                whiteSpace: 'nowrap',
+                                                            }}
+                                                        >
+                                                            {value}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeFlagArrayValue(flag.Name, index)}
+                                                                style={{
+                                                                    background: 'none',
+                                                                    border: 'none',
+                                                                    color: 'white',
+                                                                    cursor: 'pointer',
+                                                                    fontSize: '16px',
+                                                                    padding: '0',
+                                                                    lineHeight: '1',
+                                                                }}
+                                                            >
+                                                                ×
+                                                            </button>
+                                                        </div>
+                                                    ))}
                                                     <input
-                                                        key={index}
                                                         type="text"
-                                                        value={value}
-                                                        onChange={(e) => handleFlagArrayChange(flag.Name, index, e.target.value)}
-                                                        className="form-control form-control-sm"
-                                                        placeholder={flag.Description || `${flag.Name} value`}
-                                                        style={{ marginBottom: '8px' }}
+                                                        value={flagInputValues[flag.Name] || ''}
+                                                        onChange={(e) => handleFlagArrayInputChange(flag.Name, e.target.value)}
+                                                        onKeyPress={(e) => handleFlagArrayKeyPress(e, flag.Name)}
+                                                        style={{
+                                                            border: 'none',
+                                                            outline: 'none',
+                                                            flex: 1,
+                                                            minWidth: '150px',
+                                                            padding: '0',
+                                                            fontSize: '14px',
+                                                        }}
+                                                        placeholder={`${flag.Description || flag.Name} (press Enter to add)`}
                                                     />
-                                                ))}
+                                                </div>
                                             </div>
-                                            <button
-                                                type="button"
-                                                className="btn btn-sm btn-outline-secondary"
-                                                onClick={() => addFlagArrayInput(flag.Name)}
-                                            >
-                                                add {flag.Name}
-                                            </button>
                                         </>
                                     ) : (
                                         <input
