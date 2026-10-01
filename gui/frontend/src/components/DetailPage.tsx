@@ -185,7 +185,7 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                                             <div
                                                 key={index}
                                                 style={{
-                                                    backgroundColor: '#007bff',
+                                                    backgroundColor: '#adb5bd',
                                                     color: 'white',
                                                     padding: '4px 8px',
                                                     borderRadius: '4px',
