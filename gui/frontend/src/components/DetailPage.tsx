@@ -142,8 +142,10 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                 {cmd?.Short && <div>cmd.Short: {cmd.Short}</div>}
             </div>
 
-            <h3>{cmd?.Name}</h3>
-            <p>{cmd?.Short}</p>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'baseline', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0 }}>{cmd?.Name}</h3>
+                <p style={{ margin: 0 }}>{cmd?.Short}</p>
+            </div>
 
             {(cmd?.SubCommands || []).map((subCmd, index) => (
                 <button
