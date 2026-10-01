@@ -32,7 +32,6 @@ export const DetailPage: React.FC<DetailPageProps> = ({
 
     // Initialize flag values when command changes
     useEffect(() => {
-        console.log('DetailPage: cmd changed', cmd);
         const flags = cmd?.Flags || [];
         const initialized: Record<string, any> = {};
         const inputValues: Record<string, string> = {};
@@ -46,7 +45,6 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                 initialized[flag.Name] = '';
             }
         });
-        console.log('DetailPage: initialized flags', initialized);
         setFlagValues(initialized);
         setFlagInputValues(inputValues);
         // Reset args and output when changing commands
@@ -133,17 +131,6 @@ export const DetailPage: React.FC<DetailPageProps> = ({
     };
     return (
         <>
-            {/* DEBUG INFO */}
-            <div className="debug-box">
-                <strong>Debug Info:</strong>
-                <div>cmd.Name: {cmd?.Name || 'NULL'}</div>
-                <div>cmd.Path: {cmd?.Path || 'NULL'}</div>
-                <div>cmd.IsRunnable: {cmd?.IsRunnable === undefined ? 'UNDEFINED' : String(cmd?.IsRunnable)}</div>
-                <div>cmd.Flags count: {cmd?.Flags?.length || 0}</div>
-                <div>cmd.SubCommands count: {cmd?.SubCommands?.length || 0}</div>
-                {cmd?.Short && <div>cmd.Short: {cmd.Short}</div>}
-            </div>
-
             <div className="page-header">
                 <h3>{cmd?.Name}</h3>
                 <p>{cmd?.Short}</p>
@@ -164,8 +151,7 @@ export const DetailPage: React.FC<DetailPageProps> = ({
             {cmd?.IsRunnable && (
                 <div>
                     <form onSubmit={handleSubmit}>
-                        {/* Positional arguments */}
-                        {/* {cmd?.Args !== '' && ( */}
+                        {cmd?.Args !== '' && (
                             <div className="card-box">
                                 <div>
                                     <label htmlFor="args-container" className="label-primary">Args</label>
@@ -181,9 +167,8 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                                     />
                                 </div>
                             </div>
-                        {/* )} */}
+                        )}
 
-                        {/* Flags */}
                         <div className="card-box">
                             <label className="label-primary">
                                 Flags
@@ -233,7 +218,6 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                         </button>
                     </form>
 
-                    {/* Output */}
                     {output && (
                         <div className="output-box">
                             <strong>Output:</strong>
@@ -241,7 +225,6 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                         </div>
                     )}
 
-                    {/* Error */}
                     {error && (
                         <div className="error-box">
                             <strong>Error:</strong>
