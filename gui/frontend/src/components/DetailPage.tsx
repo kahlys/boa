@@ -117,118 +117,131 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                 {cmd?.Short && <div>cmd.Short: {cmd.Short}</div>}
             </div>
 
-            <h1>{cmd?.Name}</h1>
+            <h3>{cmd?.Name}</h3>
             <p>{cmd?.Short}</p>
 
             {(cmd?.SubCommands || []).map((subCmd, index) => (
                 <button
                     key={index}
+                    type="button"
+                    className="btn btn-sm btn-outline-primary"
                     onClick={() => onCommandClick(subCmd.Path)}
-                    className="back-button"
-                    style={{ cursor: 'pointer' }}
                 >
                     {subCmd.Name}
                 </button>
             ))}
-            <button onClick={onBack} className="back-button" style={{ cursor: 'pointer' }}>all</button>
+            <button className="btn btn-sm btn-outline-primary" type="button" onClick={onBack} >all</button>
 
             {cmd?.IsRunnable && (
                 <>
                     <form onSubmit={handleSubmit}>
                         {/* Positional arguments */}
-                        <div id="args-container" style={{ marginBottom: '16px' }}>
-                            {argsInputs.map((value, index) => (
-                                <input
-                                    key={index}
-                                    type="text"
-                                    value={value}
-                                    onChange={(e) => handleArgsChange(index, e.target.value)}
-                                    className="form-control form-control-sm"
-                                    placeholder="positional argument"
-                                    style={{ marginBottom: '8px' }}
-                                />
-                            ))}
-                        </div>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={addArgsInput}
-                            style={{ marginBottom: '16px' }}
-                        >
-                            add argument
-                        </button>
+                        {/* {cmd?.Args !== '' && ( */}
+                            <div style={{ backgroundColor: '#e9ecef', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                                <div>
+                                    <label htmlFor="args-container" style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>Args</label>
+                                </div>
+                                <div id="args-container">
+                                    {argsInputs.map((value, index) => (
+                                        <input
+                                            key={index}
+                                            type="text"
+                                            value={value}
+                                            onChange={(e) => handleArgsChange(index, e.target.value)}
+                                            className="form-control form-control-sm"
+                                            placeholder="positional argument"
+                                            style={{ marginBottom: '8px' }}
+                                        />
+                                    ))}
+                                </div>
+                                <div>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-secondary"
+                                        onClick={addArgsInput}
+                                        >
+                                        add argument
+                                    </button>
+                                </div>
+                            </div>
+                        {/* )} */}
 
                         {/* Flags */}
-                        {(cmd?.Flags || []).map((flag: Flag) => (
-                            <div key={flag.Name} style={{ marginTop: '16px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #eee' }}>
-                                <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>
-                                    {flag.Name}
-                                </label>
+                        <div style={{ backgroundColor: '#e9ecef', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                            <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>
+                                Flags
+                            </label>
+                            {(cmd?.Flags || []).map((flag: Flag) => (
+                                <div key={flag.Name} style={{ marginBottom: '16px', paddingBottom: '8px' }}>
+                                    <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block' }}>
+                                        {flag.Name}
+                                    </label>
 
-                                {flag.Type === 'bool' ? (
-                                    <div style={{ display: 'flex', gap: '16px' }}>
-                                        <div>
-                                            <input
-                                                type="radio"
-                                                id={`${flag.Name}-on`}
-                                                name={`flag-${flag.Name}`}
-                                                checked={flagValues[flag.Name] === true}
-                                                onChange={() => handleFlagChange(flag.Name, true)}
-                                                className="form-check-input"
-                                            />
-                                            <label htmlFor={`${flag.Name}-on`} style={{ marginLeft: '4px' }}>
-                                                on
-                                            </label>
-                                        </div>
-                                        <div>
-                                            <input
-                                                type="radio"
-                                                id={`${flag.Name}-off`}
-                                                name={`flag-${flag.Name}`}
-                                                checked={flagValues[flag.Name] === false}
-                                                onChange={() => handleFlagChange(flag.Name, false)}
-                                                className="form-check-input"
-                                            />
-                                            <label htmlFor={`${flag.Name}-off`} style={{ marginLeft: '4px' }}>
-                                                off
-                                            </label>
-                                        </div>
-                                    </div>
-                                ) : flag.Type === 'array' ? (
-                                    <>
-                                        <div id={`flag-${flag.Name}-container`}>
-                                            {((flagValues[flag.Name] || []) as string[]).map((value, index) => (
+                                    {flag.Type === 'bool' ? (
+                                        <div style={{ display: 'flex', gap: '16px' }}>
+                                            <div>
                                                 <input
-                                                    key={index}
-                                                    type="text"
-                                                    value={value}
-                                                    onChange={(e) => handleFlagArrayChange(flag.Name, index, e.target.value)}
-                                                    className="form-control form-control-sm"
-                                                    placeholder={flag.Description || `${flag.Name} value`}
-                                                    style={{ marginBottom: '8px' }}
+                                                    type="radio"
+                                                    id={`${flag.Name}-on`}
+                                                    name={`flag-${flag.Name}`}
+                                                    checked={flagValues[flag.Name] === true}
+                                                    onChange={() => handleFlagChange(flag.Name, true)}
+                                                    className="form-check-input"
                                                 />
-                                            ))}
+                                                <label htmlFor={`${flag.Name}-on`}>
+                                                    on
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <input
+                                                    type="radio"
+                                                    id={`${flag.Name}-off`}
+                                                    name={`flag-${flag.Name}`}
+                                                    checked={flagValues[flag.Name] === false}
+                                                    onChange={() => handleFlagChange(flag.Name, false)}
+                                                    className="form-check-input"
+                                                />
+                                                <label htmlFor={`${flag.Name}-off`}>
+                                                    off
+                                                </label>
+                                            </div>
                                         </div>
-                                        <button
-                                            type="button"
-                                            className="btn btn-sm btn-outline-secondary"
-                                            onClick={() => addFlagArrayInput(flag.Name)}
-                                        >
-                                            add {flag.Name}
-                                        </button>
-                                    </>
-                                ) : (
-                                    <input
-                                        type="text"
-                                        id={flag.Name}
-                                        value={flagValues[flag.Name] || ''}
-                                        onChange={(e) => handleFlagChange(flag.Name, e.target.value)}
-                                        className="form-control form-control-sm"
-                                        placeholder={flag.Description || `${flag.Name} value`}
-                                    />
-                                )}
-                            </div>
-                        ))}
+                                    ) : flag.Type === 'array' ? (
+                                        <>
+                                            <div id={`flag-${flag.Name}-container`}>
+                                                {((flagValues[flag.Name] || []) as string[]).map((value, index) => (
+                                                    <input
+                                                        key={index}
+                                                        type="text"
+                                                        value={value}
+                                                        onChange={(e) => handleFlagArrayChange(flag.Name, index, e.target.value)}
+                                                        className="form-control form-control-sm"
+                                                        placeholder={flag.Description || `${flag.Name} value`}
+                                                        style={{ marginBottom: '8px' }}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-outline-secondary"
+                                                onClick={() => addFlagArrayInput(flag.Name)}
+                                            >
+                                                add {flag.Name}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            id={flag.Name}
+                                            value={flagValues[flag.Name] || ''}
+                                            onChange={(e) => handleFlagChange(flag.Name, e.target.value)}
+                                            className="form-control form-control-sm"
+                                            placeholder={flag.Description || `${flag.Name} value`}
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
 
                         <button
                             className="btn btn-sm btn-primary"

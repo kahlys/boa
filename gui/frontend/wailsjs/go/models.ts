@@ -44,6 +44,7 @@ export namespace main {
 	    Path: string;
 	    Long: string;
 	    IsRunnable: boolean;
+	    Args: string;
 	    Flags: Flag[];
 	    SubCommands: Command[];
 	
@@ -58,6 +59,7 @@ export namespace main {
 	        this.Path = source["Path"];
 	        this.Long = source["Long"];
 	        this.IsRunnable = source["IsRunnable"];
+	        this.Args = source["Args"];
 	        this.Flags = this.convertValues(source["Flags"], Flag);
 	        this.SubCommands = this.convertValues(source["SubCommands"], Command);
 	    }

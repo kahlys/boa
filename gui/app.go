@@ -51,6 +51,7 @@ func (a *App) Command(name string) CommandComplete {
 		Long:        c.Long,
 		Path:        name,
 		IsRunnable:  a.commands.IsRunable(name),
+		Args:        strings.Join(c.ValidArgs, " | "),
 		Flags:       a.commands.flags(name),
 		SubCommands: a.commands.subCommands(name),
 	}

@@ -111,6 +111,7 @@ type CommandComplete struct {
 	Path        string
 	Long        string
 	IsRunnable  bool
+	Args        string
 	Flags       []Flag
 	SubCommands []Command
 }
