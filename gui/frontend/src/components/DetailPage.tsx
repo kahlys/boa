@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { main } from '../../wailsjs/go/models';
 import { ExecuteWithInput } from '../../wailsjs/go/main/App';
 import { ArrayInput } from './ArrayInput';
+import { BooleanSwitch } from './BooleanSwitch';
 
 type CommandComplete = main.CommandComplete;
 type Flag = main.Flag;
@@ -161,7 +162,7 @@ export const DetailPage: React.FC<DetailPageProps> = ({
             <button className="btn btn-sm btn-outline-primary" type="button" onClick={onBack} >all</button>
 
             {cmd?.IsRunnable && (
-                <>
+                <div>
                     <form onSubmit={handleSubmit}>
                         {/* Positional arguments */}
                         {/* {cmd?.Args !== '' && ( */}
@@ -194,34 +195,10 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                                     </label>
 
                                     {flag.Type === 'bool' ? (
-                                        <div style={{ display: 'flex', gap: '16px' }}>
-                                            <div>
-                                                <input
-                                                    type="radio"
-                                                    id={`${flag.Name}-on`}
-                                                    name={`flag-${flag.Name}`}
-                                                    checked={flagValues[flag.Name] === true}
-                                                    onChange={() => handleFlagChange(flag.Name, true)}
-                                                    className="form-check-input"
-                                                />
-                                                <label htmlFor={`${flag.Name}-on`}>
-                                                    on
-                                                </label>
-                                            </div>
-                                            <div>
-                                                <input
-                                                    type="radio"
-                                                    id={`${flag.Name}-off`}
-                                                    name={`flag-${flag.Name}`}
-                                                    checked={flagValues[flag.Name] === false}
-                                                    onChange={() => handleFlagChange(flag.Name, false)}
-                                                    className="form-check-input"
-                                                />
-                                                <label htmlFor={`${flag.Name}-off`}>
-                                                    off
-                                                </label>
-                                            </div>
-                                        </div>
+                                        <BooleanSwitch
+                                            value={flagValues[flag.Name] === true}
+                                            onChange={(value) => handleFlagChange(flag.Name, value)}
+                                        />
                                     ) : flag.Type === 'array' ? (
                                         <div id={`flag-${flag.Name}-container`}>
                                             <ArrayInput
@@ -288,7 +265,7 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                             <div style={{ marginTop: '8px' }}>{error}</div>
                         </div>
                     )}
-                </>
+                </div>
             )}
 
             <div className="menu-values">
