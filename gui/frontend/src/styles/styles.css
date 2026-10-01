@@ -1,0 +1,163 @@
+/* Colors */
+:root {
+  --badge-color: #adb5bd;
+  --card-bg: #e9ecef;
+  --border-color: #ced4da;
+  --error-color: #ff9999;
+  --error-text: #cc0000;
+  --white: #ffffff;
+  --debug-bg: #fff3cd;
+  --debug-border: #ffc107;
+}
+
+/* Menu Panel */
+.menu-panel {
+  padding: 16px;
+}
+
+.menu-panel h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.menu-panel .form-group {
+  margin-bottom: 16px;
+}
+
+.menu-panel input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.menu-panel button {
+  margin-bottom: 8px;
+}
+
+/* Card/Box Styles */
+.card-box {
+  background-color: var(--card-bg);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+/* Badge/Tag Styles */
+.badge-tag {
+  background-color: var(--badge-color);
+  color: var(--white);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.badge-tag button {
+  background: none;
+  border: none;
+  color: var(--white);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  line-height: 1;
+}
+
+.badge-tag button:hover {
+  opacity: 0.8;
+}
+
+/* Array Input Container */
+.array-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--white);
+  align-items: center;
+}
+
+.array-input-container input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 150px;
+  padding: 0;
+  font-size: 14px;
+}
+
+/* Output/Error Boxes */
+.output-box {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.error-box {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid var(--error-color);
+  border-radius: 4px;
+  color: var(--error-text);
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Debug Box */
+.debug-box {
+  padding: 12px;
+  background-color: var(--debug-bg);
+  border: 1px solid var(--debug-border);
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+/* Label Styles */
+.label-primary {
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.label-secondary {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Header */
+.page-header {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+
+.page-header h3,
+.page-header p {
+  margin: 0;
+}
+
+/* Form Item */
+.form-item {
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+}
+
+/* Button */
+.btn-submit {
+  margin-top: 16px;
+}

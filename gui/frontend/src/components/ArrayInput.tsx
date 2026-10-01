@@ -18,46 +18,13 @@ export const ArrayInput: React.FC<ArrayInputProps> = ({
     placeholder = 'Press Enter to add',
 }) => {
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '6px',
-                padding: '6px',
-                border: '1px solid #ced4da',
-                borderRadius: '4px',
-                backgroundColor: 'white',
-                alignItems: 'center',
-            }}
-        >
+        <div className="array-input-container">
             {values.map((value, index) => (
-                <div
-                    key={index}
-                    style={{
-                        backgroundColor: '#adb5bd',
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '14px',
-                        whiteSpace: 'nowrap',
-                    }}
-                >
+                <div key={index} className="badge-tag">
                     {value}
                     <button
                         type="button"
                         onClick={() => onRemove(index)}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'white',
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            padding: '0',
-                            lineHeight: '1',
-                        }}
                     >
                         ×
                     </button>
@@ -68,14 +35,6 @@ export const ArrayInput: React.FC<ArrayInputProps> = ({
                 value={inputValue}
                 onChange={(e) => onInputChange(e.target.value)}
                 onKeyPress={onKeyPress}
-                style={{
-                    border: 'none',
-                    outline: 'none',
-                    flex: 1,
-                    minWidth: '150px',
-                    padding: '0',
-                    fontSize: '14px',
-                }}
                 placeholder={placeholder}
             />
         </div>

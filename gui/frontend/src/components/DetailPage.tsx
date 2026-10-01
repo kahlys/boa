@@ -134,7 +134,7 @@ export const DetailPage: React.FC<DetailPageProps> = ({
     return (
         <>
             {/* DEBUG INFO */}
-            <div style={{ padding: '12px', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '20px', fontSize: '12px', fontFamily: 'monospace' }}>
+            <div className="debug-box">
                 <strong>Debug Info:</strong>
                 <div>cmd.Name: {cmd?.Name || 'NULL'}</div>
                 <div>cmd.Path: {cmd?.Path || 'NULL'}</div>
@@ -144,9 +144,9 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                 {cmd?.Short && <div>cmd.Short: {cmd.Short}</div>}
             </div>
 
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'baseline', marginBottom: '16px' }}>
-                <h3 style={{ margin: 0 }}>{cmd?.Name}</h3>
-                <p style={{ margin: 0 }}>{cmd?.Short}</p>
+            <div className="page-header">
+                <h3>{cmd?.Name}</h3>
+                <p>{cmd?.Short}</p>
             </div>
 
             {(cmd?.SubCommands || []).map((subCmd, index) => (
@@ -166,9 +166,9 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                     <form onSubmit={handleSubmit}>
                         {/* Positional arguments */}
                         {/* {cmd?.Args !== '' && ( */}
-                            <div style={{ backgroundColor: '#e9ecef', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                            <div className="card-box">
                                 <div>
-                                    <label htmlFor="args-container" style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>Args</label>
+                                    <label htmlFor="args-container" className="label-primary">Args</label>
                                 </div>
                                 <div id="args-container">
                                     <ArrayInput
@@ -184,13 +184,13 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                         {/* )} */}
 
                         {/* Flags */}
-                        <div style={{ backgroundColor: '#e9ecef', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-                            <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>
+                        <div className="card-box">
+                            <label className="label-primary">
                                 Flags
                             </label>
                             {(cmd?.Flags || []).map((flag: Flag) => (
-                                <div key={flag.Name} style={{ marginBottom: '16px', paddingBottom: '8px' }}>
-                                    <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block' }}>
+                                <div key={flag.Name} className="form-item">
+                                    <label className="label-secondary">
                                         {flag.Name}
                                     </label>
 
@@ -225,10 +225,9 @@ export const DetailPage: React.FC<DetailPageProps> = ({
                         </div>
 
                         <button
-                            className="btn btn-sm btn-primary"
+                            className="btn btn-sm btn-primary btn-submit"
                             type="submit"
                             disabled={loading}
-                            style={{ marginTop: '16px' }}
                         >
                             {loading ? 'Running...' : 'Run'}
                         </button>
@@ -236,31 +235,15 @@ export const DetailPage: React.FC<DetailPageProps> = ({
 
                     {/* Output */}
                     {output && (
-                        <div style={{
-                            marginTop: '24px',
-                            padding: '16px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontFamily: 'monospace',
-                            whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-word',
-                        }}>
+                        <div className="output-box">
                             <strong>Output:</strong>
                             <div style={{ marginTop: '8px' }}>{output}</div>
                         </div>
                     )}
 
+                    {/* Error */}
                     {error && (
-                        <div style={{
-                            marginTop: '24px',
-                            padding: '16px',
-                            border: '1px solid #ff9999',
-                            borderRadius: '4px',
-                            color: '#cc0000',
-                            fontFamily: 'monospace',
-                            whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-word',
-                        }}>
+                        <div className="error-box">
                             <strong>Error:</strong>
                             <div style={{ marginTop: '8px' }}>{error}</div>
                         </div>
